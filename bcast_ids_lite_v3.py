@@ -491,8 +491,23 @@ def icmpv6_param_problem(*args):
 
 """Generamos las lineas del dataset con formato. Ordenamos de mas actividad a menor actividad."""
 def print_mac_line():
+    #print(mac_line.items())
+    for key, value in sorted(mac_line.items(), key=lambda item: item[1][0], reverse=True):
+        values_normalized = list()
+        for v in value[1:]:
+            #print(v, round(float(v/value[0]),6))
+            values_normalized.append(round(float(v/value[0]),6))
+        # Imprimimos la actividad de la direccion MAC
+        print(key, end=";")
+        print(';'.join(map(str,values_normalized)))
+
+
+"""Generamos las lineas del dataset con formato. Ordenamos de mas actividad a menor actividad."""
+def old_print_mac_line():
     for key, value in sorted(mac_line.items(), key=lambda item: item[1][0], reverse=True):
         print(key, end=";")
+        #for v in value:
+        #    print(v)
         print(';'.join(map(str,value)))
 
 
