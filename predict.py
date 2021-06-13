@@ -22,7 +22,7 @@ import warnings
 #name_columns = ['MAC', 'NUM_MACS', 'UCAST', 'MCAST', 'BCAST','ARP','IPF','IP_ICMP','IP_UDP','IP_TCP','IP_RESTO','IP6','ETH_RESTO','ARP_noIP','SSDP','ICMPv6']
 name_columns = ['MAC', 'UCAST', 'MCAST', 'BCAST','ARP','IPF','IP_ICMP','IP_UDP','IP_TCP','IP_RESTO','IP6','ETH_RESTO','ARP_noIP','SSDP','ICMPv6']
 # Type the columns you want to delete in the detection phase
-delete_columns = ['MAC']
+delete_columns = ['MAC', 'IP_ICMP']
 
 
 """ Load the model from disk """
@@ -38,7 +38,7 @@ def load_model(filename):
 """ Prediction of the activity of a set of MAC addresses. Returns a list of abnormal MACs in the current capture """
 def predict_capture(dataset):
     global name_columns
-    loaded_model = load_model("./model_iso_forest.bin")
+    loaded_model = load_model("./model_randforest")
     macs_atacando = list()
     if loaded_model != None:
         try:
@@ -57,7 +57,7 @@ def predict_capture(dataset):
             dataFrame_aux['IF']=prediction
 
             # List of MACs with abnormal activity
-            macs_atacando = dataFrame.loc[dataFrame_aux['IF']==-1]['MAC'].tolist()
+            macs_atacando = dataFrame.loc[dataFrame_aux['IF']==1]['MAC'].tolist()
 
         except FileNotFoundError:
             msg = "Dataset does not exist or there was a problem in reading it".format(dataset)
@@ -70,6 +70,7 @@ def predict_capture(dataset):
         return macs_atacando
 
 def predict_if(cad, filename):
+    name_columns = "MAC;UCAST;MCAST;BCAST;ARP;IPF;IP_ICMP;IP_UDP;IP_TCP;IP_RESTO;IP6;ETH_RESTO;ARP_noIP;SSDP;ICMPv6"
     # Cabecera:
     if filename == None:
         loaded_model = load_model("./model_iso_forest.bin")
@@ -137,14 +138,14 @@ def predict_dataset_if(dataset, filename):
             msg = "Dataset does not exist or there were a problem in reading the columns {0}.".format(dataset)
             print(msg)
     else:
-        print("ERROR! Model not found in the current directory {os.getcwd()}")
+        print(f"ERROR! Model not found in the current directory {os.getcwd()}")
 
 if __name__ == '__main__':
     text_help= "Script to predict the activity of a MAC address or dataset using the Isolation Forest algorithm"
-    text_help += "\n\t./predict_iso_forest.py -s \"MAC_ADDRESS;257;1;5;251;251;0;0;0;5;0;0;0;1;5;0;246;0;5\""
-    text_help += "\n\t./predict_iso_forest.py -s \"MAC_ADDRESS;257;1;5;251;251;0;0;0;5;0;0;0;1;5;0;246;0;5\" -m model_iso_forest.bin"
-    text_help += "\n\t./predict_iso_forest.py -d dataset.csv"
-    text_help += "\n\t./predict_iso_forest.py -d dataset.csv -m model_iso_forest.bin"
+    text_help += "\n\t./predict.py -s \"MAC;0.0;0.001976;0.998024;0.998024;0.021739;0.0;0.0;0.0;0.0;0.001976;0.0;0.480237;0.0;0.001976\""
+    text_help += "\n\t./predict.py -s \"MAC;0.0;0.001976;0.998024;0.998024;0.021739;0.0;0.0;0.0;0.0;0.001976;0.0;0.480237;0.0;0.001976\" -m [MODEL]"
+    text_help += "\n\t./predict.py -d dataset.csv"
+    text_help += "\n\t./predict.py -d dataset.csv -m [MODEL]"
     text_help += "\nSALIDA"
     text_help += "\n\t[+]  1 -> normal activity \n"
     text_help += "\t[+] -1 -> abnormal activity \n\n"
